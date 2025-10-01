@@ -1,6 +1,7 @@
 # Raphael Starter Kit
 
 这是一个面向编程小白的现代化启动套件，基于 Next.js、Supabase 和 Creem.io 构建。专为帮助开发者快速搭建支持全球用户登录和支付的网站，特别对中国大陆开发者友好。
+基于该模板开发的AI Room Design工具网站。
 
 ## 🌟 简介
 
