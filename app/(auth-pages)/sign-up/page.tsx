@@ -17,12 +17,11 @@ export default async function SignUp(props: {
   const signUpWithGoogle = async () => {
     "use server";
     const supabase = await createClient();
-    const origin = process.env.NEXT_PUBLIC_SITE_URL;
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${origin}/auth/callback`,
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`,
         queryParams: {
           access_type: "offline",
           prompt: "consent",
@@ -73,14 +72,53 @@ export default async function SignUp(props: {
               required
             />
           </div>
-          <SubmitButton
-            className="w-full"
-            pendingText="Creating account..."
-            formAction={signUpAction}
-          >
-            Create account
-          </SubmitButton>
+          {/* Only show submit button if not in success state */}
+          {!(await searchParams).success && (
+            <SubmitButton
+              className="w-full"
+              pendingText="Creating account..."
+              formAction={signUpAction}
+            >
+              Create account
+            </SubmitButton>
+          )}
           <FormMessage message={searchParams} />
+          
+          {/* Enhanced success message for email confirmation */}
+          {(await searchParams).success && (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-green-800">
+                    注册成功！
+                  </h3>
+                  <div className="mt-2 text-sm text-green-700">
+                    <p>我们已向您的邮箱发送了一封确认邮件。</p>
+                    <p className="mt-1">请按照以下步骤完成账户激活：</p>
+                    <ol className="mt-2 ml-4 list-decimal space-y-1">
+                      <li>打开您的邮箱应用或网页版邮箱</li>
+                      <li>查找来自我们的确认邮件（请检查垃圾邮件文件夹）</li>
+                      <li>点击邮件中的"确认账户"按钮</li>
+                      <li>确认后即可返回登录页面使用您的账户</li>
+                    </ol>
+                  </div>
+                  <div className="mt-4">
+                    <Link
+                      href="/sign-in"
+                      className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                    >
+                      前往登录页面
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </form>
         <div className="relative">
           <div className="absolute inset-0 flex items-center">

@@ -13,6 +13,18 @@ export async function GET(request: Request) {
   if (code) {
     const supabase = await createClient();
     await supabase.auth.exchangeCodeForSession(code);
+    
+    // Initialize user account (create customer record if needed)
+    try {
+      const { data, error } = await supabase.rpc('initialize_user_account');
+      if (error) {
+        console.error('Failed to initialize user account:', error);
+      } else {
+        console.log('User account initialized successfully:', data);
+      }
+    } catch (err) {
+      console.error('Error calling initialize_user_account:', err);
+    }
   }
 
   if (redirectTo) {

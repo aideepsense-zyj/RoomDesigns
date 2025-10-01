@@ -23,15 +23,29 @@ export const signUpAction = async (formData: FormData) => {
     email,
     password,
     options: {
-      emailRedirectTo: `${origin}/auth/callback`,
+      emailRedirectTo: `${origin}/auth/callback?redirect_to=/dashboard`,
     },
   });
 
   if (error) {
     console.error(error.code + " " + error.message);
+    
+    // Handle email rate limiting with a more user-friendly message
+    if (error.message.includes("For security purposes, you can only request this after")) {
+      return encodedRedirect(
+        "error", 
+        "/sign-up", 
+        "邮件发送过于频繁，请等待30秒后再试。为了安全考虑，我们限制了邮件发送频率。"
+      );
+    }
+    
     return encodedRedirect("error", "/sign-up", error.message);
   } else {
-    return encodedRedirect("success", "/dashboard", "Thanks for signing up!");
+    return encodedRedirect(
+      "success", 
+      "/sign-up", 
+      "Please check your email to confirm your account before signing in."
+    );
   }
 };
 
@@ -47,6 +61,18 @@ export const signInAction = async (formData: FormData) => {
 
   if (error) {
     return encodedRedirect("error", "/sign-in", error.message);
+  }
+
+  // Initialize user account (create customer record if needed)
+  try {
+    const { data, error: rpcError } = await supabase.rpc('initialize_user_account');
+    if (rpcError) {
+      console.error('Failed to initialize user account:', rpcError);
+    } else {
+      console.log('User account initialized successfully:', data);
+    }
+  } catch (err) {
+    console.error('Error calling initialize_user_account:', err);
   }
 
   return redirect("/dashboard");
